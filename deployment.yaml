@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transcode-app
+  namespace: transcode-infra-example
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: transcode-app
+  template:
+    metadata:
+      labels:
+        app: transcode-app
+    spec:
+      containers:
+        - name: transcode-app
+          image: julesl123/fabstir-transcode-example:0e01b8f99284bce8b0b8370d39b07d73bba5fd3a
+          ports:
+            - containerPort: 50051
+          env:
+            - name: PORTAL_URL
+              valueFrom:
+                secretKeyRef:
+                  name: my-secret
+                  key: PORTAL_URL
+            - name: TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: my-secret
+                  key: TOKEN
+          volumeMounts:
+            - name: secrets
+              mountPath: '/var/run/secrets/my-secret'
+              readOnly: true
+      volumes:
+        - name: secrets
+          secret:
+            secretName: my-secret
